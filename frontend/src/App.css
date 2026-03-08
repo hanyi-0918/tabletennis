@@ -489,25 +489,21 @@ button:hover {
     padding: 8px 14px;
     font-size: 0.88rem;
   }
+  /* 竖屏：两个对手头像保持同一行，仅缩小尺寸 */
   .player-photo-row {
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-  }
-  .player-photo-row .player-photo.left,
-  .player-photo-row .player-photo.right {
-    order: 0;
-  }
-  .player-photo-row .player-photo-content {
-    order: 1;
-    width: 100%;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
   }
   .player-photo img {
-    width: 72px;
-    height: 72px;
+    width: 56px;
+    height: 56px;
   }
   .player-photo span {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
+  }
+  .player-photo-content {
+    min-width: 0;
   }
   .recent-matches ul {
     padding-left: 18px;
