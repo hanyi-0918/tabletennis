@@ -1,5 +1,5 @@
 -- 乒乓球 H2H 项目 Supabase 表结构
--- 在 Supabase Dashboard → SQL Editor 中执行
+-- 在 Supabase Dashboard → SQL Editor 中执行（仅建表/RLS/球员，不包含交手数据更新）
 
 -- 球员表（8 人）
 create table if not exists public.players (
@@ -23,15 +23,17 @@ create table if not exists public.h2h (
 alter table public.players enable row level security;
 alter table public.h2h enable row level security;
 
+drop policy if exists "Allow public read players" on public.players;
 create policy "Allow public read players"
   on public.players for select
   using (true);
 
+drop policy if exists "Allow public read h2h" on public.h2h;
 create policy "Allow public read h2h"
   on public.h2h for select
   using (true);
 
--- 插入 8 名球员（交手数据由 seed 脚本或导入脚本写入）
+-- 插入 8 名球员（交手数据由 seed 或 patch 脚本单独写入）
 insert into public.players (name_zh) values
   ('马龙'), ('樊振东'), ('许昕'), ('王皓'), ('马琳'), ('王励勤'), ('张继科'), ('王楚钦')
 on conflict (name_zh) do nothing;

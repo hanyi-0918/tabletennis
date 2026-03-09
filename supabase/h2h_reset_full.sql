@@ -1,4 +1,6 @@
--- 清空并导入 H2H 数据（可在 Supabase SQL Editor 中执行）
+-- 线上 Supabase 全量 H2H 数据（与 backend/main.py 同步）
+-- 在 Supabase Dashboard → SQL Editor 中新建查询，粘贴本文件全部内容，Run 一次
+-- 含：马龙/樊振东 27:25、亚锦赛/WTT4:1、王励勤/马龙 两场+直通不莱梅位置、张继科/马龙 成都公开赛、王楚钦/许昕 2025全运会 8:6、鹿特丹 王皓4:2 等
 DELETE FROM public.h2h;
 
 INSERT INTO public.h2h (player1, player2, player1_wins, player2_wins, player1_major_wins, player2_major_wins, recent_matches)

@@ -160,6 +160,8 @@ const EVENT_ZH_TO_EN = [
   ['世锦赛男单', 'World Champs MS'],
   ['奥运会男单', 'Olympics MS'],
   ['亚洲杯男单', 'Asian Cup MS'],
+  ['亚洲乒乓球锦标赛男单决赛', 'Asian Champs MS Final'],
+  ['亚洲乒乓球锦标赛', 'Asian Champs'],
   ['亚锦赛男单', 'Asian Champs MS'],
   ['全运会男单', 'National Games MS'],
   ['全运会男团', 'National Games team'],
@@ -362,12 +364,36 @@ const T = {
   },
 }
 
+// 根据 IP 地区检测默认语言：国内 CN 用中文，国外用英文（仅当未保存过偏好时）
+async function detectLocale() {
+  try {
+    const saved = localStorage.getItem(LANG_KEY)
+    if (saved === 'en' || saved === 'zh') return null
+    const traceRes = await fetch('/cdn-cgi/trace')
+    if (traceRes.ok) {
+      const text = await traceRes.text()
+      const m = text.match(/country=(\w+)/)
+      return m && m[1] === 'CN' ? 'zh' : 'en'
+    }
+  } catch {}
+  try {
+    const res = await fetch('https://ipapi.co/json/?fields=country_code', { signal: AbortSignal.timeout(3000) })
+    if (res.ok) {
+      const j = await res.json()
+      return j && j.country_code === 'CN' ? 'zh' : 'en'
+    }
+  } catch {}
+  if (typeof navigator !== 'undefined' && navigator.language && navigator.language.toLowerCase().startsWith('zh')) return 'zh'
+  return 'en'
+}
+
 function App() {
   const [lang, setLang] = useState(() => {
     try {
       const saved = localStorage.getItem(LANG_KEY)
-      return saved === 'en' ? 'en' : 'zh'
-    } catch { return 'zh' }
+      if (saved === 'en' || saved === 'zh') return saved
+      return null
+    } catch { return null }
   })
   const [playerName, setPlayerName] = useState('')
   const [allPlayers, setAllPlayers] = useState([])
@@ -379,8 +405,21 @@ function App() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    try { localStorage.setItem(LANG_KEY, lang) } catch {}
+    if (lang !== null) {
+      try { localStorage.setItem(LANG_KEY, lang) } catch {}
+    }
   }, [lang])
+
+  useEffect(() => {
+    if (lang !== null) return
+    let cancelled = false
+    detectLocale().then((detected) => {
+      if (cancelled || detected === null) return
+      setLang(detected)
+      try { localStorage.setItem(LANG_KEY, detected) } catch {}
+    })
+    return () => { cancelled = true }
+  }, [])
 
   const t = (key) => T[lang]?.[key] ?? T.zh[key] ?? key
 
@@ -498,6 +537,15 @@ function App() {
     setSelectedOpponent('')
     setH2hResult(null)
     setError('')
+  }
+
+  if (lang === null) {
+    return (
+      <div className="container">
+        <h1>{T.zh.title}</h1>
+        <div className="subtitle" style={{ color: 'var(--text-grey)' }}>...</div>
+      </div>
+    )
   }
 
   return (
